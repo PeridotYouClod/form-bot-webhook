@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import urllib
 import json
 import os
@@ -7,6 +8,23 @@ import os
 from flask import Flask
 from flask import request
 from flask import make_response
+
+import httplib2
+
+from apiclient import discovery
+from oauth2client import client
+from oauth2client import tools
+from oauth2client.file import Storage
+
+from oauth2client.client import OAuth2WebServerFlow
+
+import tempfile
+
+# If modifying these scopes, delete your previously saved credentials
+# at ~/.credentials/drive-python-quickstart.json
+SCOPES = 'https://www.googleapis.com/auth/script.scriptapp'
+CLIENT_SECRET_FILE = 'client_secret.json'
+APPLICATION_NAME = 'Drive API Quickstart'
 
 # Flask app should start in global layout
 app = Flask(__name__)
@@ -29,29 +47,39 @@ def webhook():
 
 
 def processRequest(req):
-    if req.get("result").get("action") != "yahooWeatherForecast":
-        return {}
-    baseurl = "https://query.yahooapis.com/v1/public/yql?"
-    yql_query = makeYqlQuery(req)
-    if yql_query is None:
-        return {}
-    yql_url = baseurl + urllib.urlencode({'q': yql_query}) + "&format=json"
-    result = urllib.urlopen(yql_url).read()
-    data = json.loads(result)
-    res = makeWebhookResult(data)
-    return res
+    # ID of the script to call. Acquire this from the Apps Script editor,
+    SCRIPT_ID = 'MYjwzHYAJOd3JrUyFsgHBV5sYkudgbe9Q'
+    # Initialize parameters for function call.
+    request = {
+        "function": "myFunction"
+        }
 
+    try:
+        credentials = get_credentials()
+        http = credentials.authorize(httplib2.Http())
 
-def makeYqlQuery(req):
-    result = req.get("result")
-    parameters = result.get("parameters")
-    city = parameters.get("geo-city")
-    if city is None:
-        return None
+        service = discovery.build('script', 'v1', http=http)
+        # Make the request.
+        response = service.scripts().run(body=request,
+                scriptId=SCRIPT_ID).execute()
 
-    return "select * from weather.forecast where woeid in (select woeid from geo.places(1) where text='" + city + "')"
+        # Print results of the request.
+        if 'error' in response:
+            # The API executed, but the script returned an error.
+            error = response['error']['details'][0]
+            print("Script error! Message: {0}".format(error['errorMessage']))
+        else:
+            # Here, the function returns an array of strings.
+            #sheetNames = response['response'].get('result')
+            print('Success!')
+            #for name in sheetNames:
+            #    print("\t{0}".format(name))
 
+    except Exception as e:
+        # The API encountered a problem before the script started executing.
+        print("failed because", e)
 
+'''
 def makeWebhookResult(data):
     query = data.get('query')
     if query is None:
@@ -90,7 +118,37 @@ def makeWebhookResult(data):
         # "contextOut": [],
         "source": "apiai-weather-webhook-sample"
     }
+'''
 
+def get_credentials():
+    """Gets valid user credentials from storage.
+
+    If nothing has been stored, or if the stored credentials are invalid,
+    the OAuth2 flow is completed to obtain the new credentials.
+
+    Returns:
+        Credentials, the obtained credential.
+    """
+
+    secretFile = open("client_secret.json", 'w')
+    secretFile.truncate()
+    secretFile.write(os.environ['secret'])
+    secretFile.close()
+    home_dir = os.path.expanduser('~')
+    credential_dir = os.path.join(home_dir, '.credentials')
+    if not os.path.exists(credential_dir):
+        os.makedirs(credential_dir)
+    credential_path = os.path.join(credential_dir,
+                                   'drive-python-quickstart.json')
+
+    store = Storage(credential_path)
+    credentials = store.get()
+    if not credentials or credentials.invalid or True:
+        flow = client.flow_from_clientsecrets("client_secret.json", SCOPES)
+        flow.user_agent = APPLICATION_NAME
+        credentials = tools.run_flow(flow, store, None)
+        print('Storing credentials to ' + credential_path)
+    return credentials
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
