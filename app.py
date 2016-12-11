@@ -35,11 +35,11 @@ def webhook():
     req = request.get_json(silent=True, force=True)
 
     print("Request:")
-    print(json.dumps(req, indent=4))
+    print(json.dumps(req, indent=2))
 
     res = processRequest(req)
 
-    res = json.dumps(res, indent=4)
+    res = json.dumps(res, indent=2)
     # print(res)
     r = make_response(res)
     r.headers['Content-Type'] = 'application/json'
@@ -47,13 +47,15 @@ def webhook():
 
 
 def processRequest(req):
+    print(json.dumps(req["result"]["parameters"], indent=2))
+
     # ID of the script to call. Acquire this from the Apps Script editor,
     SCRIPT_ID = 'MYjwzHYAJOd3JrUyFsgHBV5sYkudgbe9Q'
     # Initialize parameters for function call.
     request = {
-        "function": "myFunction"
-        }
-
+        "function": "myFunction",
+        "parameters": [req["result"]["parameters"]]
+    }
     try:
         credentials = get_credentials()
         http = credentials.authorize(httplib2.Http())
@@ -133,21 +135,7 @@ def get_credentials():
     secretFile = open("drive-python-quickstart.json", 'w')
     secretFile.write(os.environ['credential'])
     secretFile.close()
-    '''home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
-    if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir,
-                                   'drive-python-quickstart.json')
 
-    store = Storage(credential_path)
-    credentials = store.get()
-
-    if not credentials or credentials.invalid or True:
-        flow = client.flow_from_clientsecrets("client_secret.json", SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        credentials = tools.run_flow(flow, store, None)
-        print('Storing credentials to ' + credential_path)'''
     store = Storage("drive-python-quickstart.json")
     credentials = store.get()
     return credentials
