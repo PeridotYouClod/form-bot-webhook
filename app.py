@@ -42,7 +42,6 @@ def webhook():
     res = processRequest(req)
 
     res = json.dumps(res, indent=2)
-    # print(res)
     r = make_response(res)
     r.headers['Content-Type'] = 'application/json'
     return r
@@ -50,12 +49,9 @@ def webhook():
 
 def processRequest(req):
     print(json.dumps(req["result"]["parameters"], indent=2))
-
-    # ID of the script to call. Acquire this from the Apps Script editor,
-    SCRIPT_ID = 'MYjwzHYAJOd3JrUyFsgHBV5sYkudgbe9Q'
     # Initialize parameters for function call.
     request = {
-        "function": "fillRecordCostForm",
+        "function": "fillForm",
         "parameters": [req["result"]["parameters"]]
     }
     try:
@@ -65,7 +61,7 @@ def processRequest(req):
         service = discovery.build('script', 'v1', http=http)
         # Make the request.
         response = service.scripts().run(body=request,
-                scriptId=SCRIPT_ID).execute()
+                scriptId=os.environ['scriptId']).execute()
 
         # Print results of the request.
         if 'error' in response:
@@ -80,7 +76,7 @@ def processRequest(req):
             #    print("\t{0}".format(name))
 
     except Exception as e:
-        # The API encountered a problem before the script started executing.
+        # failure before the script started executing.
         print("failed because", e)
 
 '''
@@ -133,7 +129,6 @@ def get_credentials():
     Returns:
         Credentials, the obtained credential.
     """
-
     secretFile = open("drive-python-quickstart.json", 'w')
     secretFile.write(os.environ['credential'])
     secretFile.close()
@@ -143,7 +138,6 @@ def get_credentials():
     return credentials
 
 if __name__ == '__main__':
-    #get_credentials()
     port = int(os.getenv('PORT', 5000))
 
     print("Starting app on port %d" % port)
