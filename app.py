@@ -130,8 +130,7 @@ def get_credentials():
         Credentials, the obtained credential.
     """
 
-    secretFile = open("credentials/drive-python-quickstart.json", 'w')
-    secretFile.truncate()
+    secretFile = open("drive-python-quickstart.json", 'w')
     secretFile.write(os.environ['credential'])
     secretFile.close()
     '''home_dir = os.path.expanduser('~')
@@ -149,11 +148,12 @@ def get_credentials():
         flow.user_agent = APPLICATION_NAME
         credentials = tools.run_flow(flow, store, None)
         print('Storing credentials to ' + credential_path)'''
-    store = Storage(secretFile)
+    store = Storage("drive-python-quickstart.json")
     credentials = store.get()
-    return os.environ['credential']
+    return credentials
 
 if __name__ == '__main__':
+    #get_credentials()
     port = int(os.getenv('PORT', 5000))
 
     print("Starting app on port %d" % port)
