@@ -22,7 +22,9 @@ import tempfile
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/drive-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/script.scriptapp'
+SCOPES = ['https://www.googleapis.com/auth/script.scriptapp',
+          'https://www.googleapis.com/auth/forms']
+
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Drive API Quickstart'
 
@@ -53,7 +55,7 @@ def processRequest(req):
     SCRIPT_ID = 'MYjwzHYAJOd3JrUyFsgHBV5sYkudgbe9Q'
     # Initialize parameters for function call.
     request = {
-        "function": "myFunction",
+        "function": "fillRecordCostForm",
         "parameters": [req["result"]["parameters"]]
     }
     try:
