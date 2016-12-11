@@ -28,12 +28,7 @@ APPLICATION_NAME = 'Drive API Quickstart'
 
 # Flask app should start in global layout
 app = Flask(__name__)
-credentials = None
 
-
-@app.route('/login', methods=['GET'])
-def login():
-    credentials = get_credentials()
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -60,6 +55,7 @@ def processRequest(req):
         }
 
     try:
+        credentials = get_credentials()
         http = credentials.authorize(httplib2.Http())
 
         service = discovery.build('script', 'v1', http=http)
@@ -134,11 +130,11 @@ def get_credentials():
         Credentials, the obtained credential.
     """
 
-    secretFile = open("client_secret.json", 'w')
+    secretFile = open("credentials/drive-python-quickstart.json", 'w')
     secretFile.truncate()
-    secretFile.write(os.environ['secret'])
+    secretFile.write(os.environ['credential'])
     secretFile.close()
-    home_dir = os.path.expanduser('~')
+    '''home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir, '.credentials')
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
@@ -147,12 +143,15 @@ def get_credentials():
 
     store = Storage(credential_path)
     credentials = store.get()
+
     if not credentials or credentials.invalid or True:
         flow = client.flow_from_clientsecrets("client_secret.json", SCOPES)
         flow.user_agent = APPLICATION_NAME
         credentials = tools.run_flow(flow, store, None)
-        print('Storing credentials to ' + credential_path)
-    return credentials
+        print('Storing credentials to ' + credential_path)'''
+    store = Storage(secretFile)
+    credentials = store.get()
+    return os.environ['credential']
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
