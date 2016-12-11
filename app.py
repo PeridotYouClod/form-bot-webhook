@@ -28,7 +28,12 @@ APPLICATION_NAME = 'Drive API Quickstart'
 
 # Flask app should start in global layout
 app = Flask(__name__)
+credentials = None
 
+
+@app.route('/login', methods=['GET'])
+def login():
+    credentials = get_credentials()
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -55,7 +60,6 @@ def processRequest(req):
         }
 
     try:
-        credentials = get_credentials()
         http = credentials.authorize(httplib2.Http())
 
         service = discovery.build('script', 'v1', http=http)
