@@ -175,7 +175,7 @@ def processPricenow(req):
     currentDollar = 24.05
     if "date" in params:
         oldYear = int(params["date"])
-        oldYear = oldYear < 1913 ? 1913 : oldYear
+        oldYear = oldYear if oldYear >= 1913 else 1913
         ratio = currentDollar / CONVERSION_TABLE[oldYear]
     else:
         ratio = 1
