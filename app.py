@@ -176,7 +176,7 @@ def processPricenow(req):
     if "date" in params:
         oldYear = int(params["date"])
     else:
-        yearDiff = int(params["unit-currency"]["amount"])
+        yearDiff = int(params["duration"]["amount"])
         oldYear = 2016 - yearDiff
     oldYear = oldYear if oldYear >= 1913 else 1913
     ratio = currentDollar / CONVERSION_TABLE[oldYear]
