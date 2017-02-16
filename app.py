@@ -64,8 +64,8 @@ def processPricenow(req):
     params = req["result"]["parameters"]
     print("processPricenow: " +  json.dumps(params, indent=2))
     print("unit-currency: " +  json.dumps(params["unit-currency"], indent=2))
-    print("Amount: " +  params["unit-currency"]["amount"])
-    newMoney = params["unit-currency"]["amount"] * 2
+    print("Amount: " +  str(params["unit-currency"]["amount"]))
+    newMoney = float(params["unit-currency"]["amount"]) * 2.0
     print("newMoney: " + newMoney)
     speech =  "This is not right but $" + newMoney
     print("speech: " + speech)
