@@ -63,6 +63,7 @@ def pricenow():
 def processPricenow(req):
     params = req["result"]["parameters"]
     print("processPricenow: " +  json.dumps(params, indent=2))
+    print("unit-currency: " +  json.dumps(params["unit-currency"], indent=2))
     print("Amount: " +  params["unit-currency"]["amount"])
     newMoney = params["unit-currency"]["amount"] * 2
     print("newMoney: " + newMoney)
