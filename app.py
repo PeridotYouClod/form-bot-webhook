@@ -175,14 +175,15 @@ def processPricenow(req):
     currentDollar = 24.05
     if "date" in params:
         oldYear = int(params["date"])
-        oldYear = oldYear if oldYear >= 1913 else 1913
-        ratio = currentDollar / CONVERSION_TABLE[oldYear]
     else:
-        ratio = 1
+        yearDiff = int(params["unit-currency"]["amount"])
+        oldYear = 2016 - yearDiff
+    oldYear = oldYear if oldYear >= 1913 else 1913
+    ratio = currentDollar / CONVERSION_TABLE[oldYear]
     newMoney = float(params["unit-currency"]["amount"]) * ratio
     print("newMoney: %s" % newMoney)
     
-    speech =  "This is not right but $" + str(newMoney)
+    speech =  "This is not right but $%.2f" % newMoney
     print("speech:  %s", speech)
     retObj = {
         "speech": speech,
