@@ -169,18 +169,18 @@ def pricenow():
 def processPricenow(req):
     params = req["result"]["parameters"]
     print("processPricenow: %s" % json.dumps(params, indent=2))
-
-    currentDollar = 24.05
+    lastYearInMap = 2016
+    currentDollar =  CONVERSION_TABLE[lastYearInMap]
     if "date" in params:
         oldYear = int(params["date"])
     else:
         yearDiff = int(params["duration"]["amount"])
-        oldYear = 2016 - yearDiff
+        oldYear = lastYearInMap - yearDiff
     oldYear = oldYear if oldYear >= 1913 else 1913
     ratio = currentDollar / CONVERSION_TABLE[oldYear]
     inputMoney = float(params["unit-currency"]["amount"])
     newMoney = inputMoney * ratio
-    speech =  "In %s $%.2f that was worth $%.2f" % (oldYear,inputMoney, newMoney)
+    speech =  "In %s $%.2f was worth $%.2f" % (oldYear,inputMoney, newMoney)
     retObj = {
         "speech": speech,
         "displayText": speech,
