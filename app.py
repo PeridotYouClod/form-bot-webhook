@@ -62,12 +62,16 @@ def pricenow():
 
 def processPricenow(req):
     params = req["result"]["parameters"]
-    print(json.dumps(params, indent=2))
-    
-    return {'newMoney': params.amount * 2}
+    print("processPricenow: " +  json.dumps(params, indent=2))
+    newMoney = params["unit-currency"]["amount"] * 2
+    return {
+        "speech": "This is not right but $" + newMoney,
+        "source": "Formbot-Webhook-pricenow",
+        "displayText": "This is not right but $" + newMoney
+    }
 
 def processRequest(req):
-    print(json.dumps(req["result"]["parameters"], indent=2))
+    print("processRequest: " + json.dumps(req["result"]["parameters"], indent=2))
     # Initialize parameters for function call.
     request = {
         "function": "fillForm",
