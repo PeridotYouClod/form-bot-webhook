@@ -46,6 +46,25 @@ def webhook():
     r.headers['Content-Type'] = 'application/json'
     return r
 
+@app.route('/pricenow', methods=['POST'])
+def pricenow():
+    req = request.get_json(silent=True, force=True)
+
+    print("Request:")
+    print(json.dumps(req, indent=2))
+
+    res = processPricenow(req)
+
+    res = json.dumps(res, indent=2)
+    r = make_response(res)
+    r.headers['Content-Type'] = 'application/json'
+    return r
+
+def processPricenow(req):
+    params = req["result"]["parameters"]
+    print(json.dumps(params, indent=2))
+    
+    return {'newMoney': params.amount * 2}
 
 def processRequest(req):
     print(json.dumps(req["result"]["parameters"], indent=2))
