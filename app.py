@@ -64,11 +64,14 @@ def processPricenow(req):
     params = req["result"]["parameters"]
     print("processPricenow: " +  json.dumps(params, indent=2))
     newMoney = params["unit-currency"]["amount"] * 2
-    return {
-        "speech": "This is not right but $" + newMoney,
-        "source": "Formbot-Webhook-pricenow",
-        "displayText": "This is not right but $" + newMoney
+    speech =  "This is not right but $" + newMoney
+    retObj = {
+        "speech": speech,
+        "displayText": speech,
+        "source": "Formbot-Webhook-pricenow"        
     }
+    print(json.dumps(retObj, indent=2))
+    return retObj
 
 def processRequest(req):
     print("processRequest: " + json.dumps(req["result"]["parameters"], indent=2))
