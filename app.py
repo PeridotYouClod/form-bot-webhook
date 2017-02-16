@@ -183,7 +183,7 @@ def processPricenow(req):
     newMoney = float(params["unit-currency"]["amount"]) * ratio
     print("newMoney: %s" % newMoney)
     
-    speech =  "This is not right but $%.2f" % newMoney
+    speech =  "In %s that was worth $%.2f" % (oldYear, newMoney)
     print("speech:  %s", speech)
     retObj = {
         "speech": speech,
