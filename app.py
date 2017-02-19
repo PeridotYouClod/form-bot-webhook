@@ -172,7 +172,7 @@ def sensorbot():
 
     print("Request:")
     print(json.dumps(req, indent=2))
-    res = processPricenow(req)
+    res = processSensorbot(req)
 
     res = json.dumps(res, indent=2)
     r = make_response(res)
