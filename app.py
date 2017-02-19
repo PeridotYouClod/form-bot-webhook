@@ -107,9 +107,9 @@ def processSensorbot(req):
     print("results: %s" % results)
     speech = ""
     for result in results:
-        if hasattr(result, 'humidity'):
+        if 'humidity' in result:
             speech += "The Humidity is %s" % (result["humidity"])
-        if hasattr(result, 'celsius_degree'):
+        if 'celsius_degree' in result:
             speech += " The temperature is %s degrees celsius." % (result["celsius_degree"])
         print(speech)
 #     response = requests.get(url + os.environ['wioLink_access_token'])
