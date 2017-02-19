@@ -94,7 +94,7 @@ def processSensorbot(req):
     '''
                     
     for sensor in sensors:
-        urls.push(APIAI_TO_ID[sensor])
+        urls.append(APIAI_TO_ID[sensor])
         print(APIAI_TO_ID[sensor])
     print("urls: %s" % urls)
     results = []
@@ -102,7 +102,7 @@ def processSensorbot(req):
         builtUrl = root + url + access
         result = urllib.request.urlopen(builtUrl).read()
         jsonObj = json.loads(result)
-        results.push(jsonObj)
+        results.append(jsonObj)
         print(jsonObj)
     print("results: %s" % results)
     speech = ""
