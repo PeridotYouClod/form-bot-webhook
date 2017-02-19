@@ -166,6 +166,33 @@ def pricenow():
     r.headers['Content-Type'] = 'application/json'
     return r
 
+@app.route('/sensorbot', methods=['POST'])
+def sensorbot():
+    req = request.get_json(silent=True, force=True)
+
+    print("Request:")
+    print(json.dumps(req, indent=2))
+    res = processPricenow(req)
+
+    res = json.dumps(res, indent=2)
+    r = make_response(res)
+    r.headers['Content-Type'] = 'application/json'
+    return r
+
+def processSensorbot(req):
+    url = "https://us.wio.seeed.io/v1/node/GroveTempHumD0/humidity?="
+    response = requests.get(url + os.environ['wioLink_access_token'])
+    jsonObj = response.json()
+    print(json.dumps(jsonObj, indent=2))
+    speech =  "The Humidity is %s" % (jsonObj.humidity)
+    retObj = {
+        "speech": speech,
+        "displayText": speech,
+        "source": "Formbot-Webhook-sensorbot"        
+    }
+    print("retObj:  %s" % json.dumps(retObj, indent=2))
+    return retObj
+
 def processPricenow(req):
     params = req["result"]["parameters"]
     print("processPricenow: %s" % json.dumps(params, indent=2))
@@ -220,47 +247,6 @@ def processRequest(req):
     except Exception as e:
         # failure before the script started executing.
         print("failed because", e)
-
-'''
-def makeWebhookResult(data):
-    query = data.get('query')
-    if query is None:
-        return {}
-
-    result = query.get('results')
-    if result is None:
-        return {}
-
-    channel = result.get('channel')
-    if channel is None:
-        return {}
-
-    item = channel.get('item')
-    location = channel.get('location')
-    units = channel.get('units')
-    if (location is None) or (item is None) or (units is None):
-        return {}
-
-    condition = item.get('condition')
-    if condition is None:
-        return {}
-
-    # print(json.dumps(item, indent=4))
-
-    speech = "Today in " + location.get('city') + ": " + condition.get('text') + \
-             ", the temperature is " + condition.get('temp') + " " + units.get('temperature')
-
-    print("Response:")
-    print(speech)
-
-    return {
-        "speech": speech,
-        "displayText": speech,
-        # "data": data,
-        # "contextOut": [],
-        "source": "apiai-weather-webhook-sample"
-    }
-'''
 
 def get_credentials():
     """Gets valid user credentials from storage.
