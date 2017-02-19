@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import urllib
+import urllib.request, urllib.parse, urllib.error
 import json
 import os
 
@@ -77,8 +78,13 @@ def processSensorbot(req):
     print(url)
     print(os.environ['wioLink_access_token'])
     print(url + os.environ['wioLink_access_token'])
-    response = requests.get(url + os.environ['wioLink_access_token'])
-    jsonObj = response.json()
+    
+    
+    result = urllib.request.urlopen(url).read()
+    jsonObj = json.loads(result)
+    
+#     response = requests.get(url + os.environ['wioLink_access_token'])
+#     jsonObj = response.json()
     print(json.dumps(jsonObj, indent=2))
     speech =  "The Humidity is %s" % (jsonObj.humidity)
     retObj = {
