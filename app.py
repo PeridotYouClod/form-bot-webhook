@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 import urllib
 import urllib.request, urllib.parse, urllib.error
 import json
@@ -16,7 +17,6 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
-
 from oauth2client.client import OAuth2WebServerFlow
 
 import tempfile
