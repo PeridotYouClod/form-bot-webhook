@@ -28,6 +28,10 @@ SCOPES = ['https://www.googleapis.com/auth/script.scriptapp',
 
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Drive API Quickstart'
+APIAI_TO_ID = {'temperature':"GroveTempHumD0/temperature",
+               "humidity": "GroveTempHumD0/humidity"}
+               
+               
 
 # Flask app should start in global layout
 app = Flask(__name__)
@@ -74,14 +78,37 @@ def sensorbot():
     return r
 
 def processSensorbot(req):
-    url = "https://us.wio.seeed.io/v1/node/GroveTempHumD0/humidity?access_token=" + os.environ['wioLink_access_token']
-    result = urllib.request.urlopen(url).read()
-    jsonObj = json.loads(result)
+    root = "https://us.wio.seeed.io/v1/node/"
+    access = "?access_token=" + os.environ['wioLink_access_token']
+    params = req["result"]["parameters"]
+    sensors = params["sensors"]
+    urls = []
+    '''  
+    list(map(
+        lambda sensor: APIAI_TO_ID[sensor]
+    ))
+    '''
+                    
+    for sensor in sensors:
+        urls.push(APIAI_TO_ID[sensor])
+    results = []
+    for url in urls:
+        builtUrl = root + url + access
+        result = urllib.request.urlopen(builtUrl).read()
+        jsonObj = json.loads(result)
+        results.push(jsonObj)
+        
+    speech = ""
+    for result in results:
+        if hasattr(result, 'humidity'):
+            speech += "The Humidity is %s" % (result["humidity"])
+        if hasattr(result, 'celsius_degree'):
+            speech += " The temperature is %s degrees celsius." % (result["celsius_degree"])
     
 #     response = requests.get(url + os.environ['wioLink_access_token'])
 #     jsonObj = response.json()
-    print(json.dumps(jsonObj, indent=2))
-    speech =  "The Humidity is %s" % (jsonObj["humidity"])
+#     print(json.dumps(jsonObj, indent=2))
+#     speech =  "The Humidity is %s" % (jsonObj["humidity"])
     retObj = {
         "speech": speech,
         "displayText": speech,
