@@ -91,12 +91,14 @@ def processSensorbot(req):
                     
     for sensor in sensors:
         urls.push(APIAI_TO_ID[sensor])
+        print(APIAI_TO_ID[sensor])
     results = []
     for url in urls:
         builtUrl = root + url + access
         result = urllib.request.urlopen(builtUrl).read()
         jsonObj = json.loads(result)
         results.push(jsonObj)
+        print(jsonObj)
         
     speech = ""
     for result in results:
@@ -104,7 +106,7 @@ def processSensorbot(req):
             speech += "The Humidity is %s" % (result["humidity"])
         if hasattr(result, 'celsius_degree'):
             speech += " The temperature is %s degrees celsius." % (result["celsius_degree"])
-    
+        print(speech)
 #     response = requests.get(url + os.environ['wioLink_access_token'])
 #     jsonObj = response.json()
 #     print(json.dumps(jsonObj, indent=2))
