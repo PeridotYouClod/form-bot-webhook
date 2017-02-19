@@ -31,6 +31,136 @@ APPLICATION_NAME = 'Drive API Quickstart'
 # Flask app should start in global layout
 app = Flask(__name__)
 
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    req = request.get_json(silent=True, force=True)
+
+    print("Request:")
+    print(json.dumps(req, indent=2))
+
+    res = processRequest(req)
+
+    res = json.dumps(res, indent=2)
+    r = make_response(res)
+    r.headers['Content-Type'] = 'application/json'
+    return r
+
+@app.route('/pricenow', methods=['POST'])
+def pricenow():
+    req = request.get_json(silent=True, force=True)
+
+    print("Request:")
+    print(json.dumps(req, indent=2))
+
+    res = processPricenow(req)
+
+    res = json.dumps(res, indent=2)
+    r = make_response(res)
+    r.headers['Content-Type'] = 'application/json'
+    return r
+
+@app.route('/sensorbot', methods=['POST'])
+def sensorbot():
+    req = request.get_json(silent=True, force=True)
+
+    print("Request:")
+    print(json.dumps(req, indent=2))
+    res = processSensorbot(req)
+
+    res = json.dumps(res, indent=2)
+    r = make_response(res)
+    r.headers['Content-Type'] = 'application/json'
+    return r
+
+def processSensorbot(req):
+    url = "https://us.wio.seeed.io/v1/node/GroveTempHumD0/humidity?="
+    print(url)
+    print(os.environ['wioLink_access_token'])
+    print(url + os.environ['wioLink_access_token'])
+    response = requests.get(url + os.environ['wioLink_access_token'])
+    jsonObj = response.json()
+    print(json.dumps(jsonObj, indent=2))
+    speech =  "The Humidity is %s" % (jsonObj.humidity)
+    retObj = {
+        "speech": speech,
+        "displayText": speech,
+        "source": "Formbot-Webhook-sensorbot"        
+    }
+    print("retObj:  %s" % json.dumps(retObj, indent=2))
+    return retObj
+
+def processPricenow(req):
+    params = req["result"]["parameters"]
+    print("processPricenow: %s" % json.dumps(params, indent=2))
+    lastYearInMap = 2016
+    currentDollar =  CONVERSION_TABLE[lastYearInMap]
+    if "date" in params:
+        oldYear = int(params["date"])
+    else:
+        yearDiff = int(params["duration"]["amount"])
+        oldYear = lastYearInMap - yearDiff
+    oldYear = oldYear if oldYear >= 1913 else 1913
+    ratio = currentDollar / CONVERSION_TABLE[oldYear]
+    inputMoney = float(params["unit-currency"]["amount"])
+    newMoney = inputMoney * ratio
+    speech =  "In %s $%.2f was worth $%.2f" % (oldYear,inputMoney, newMoney)
+    retObj = {
+        "speech": speech,
+        "displayText": speech,
+        "source": "Formbot-Webhook-pricenow"        
+    }
+    print("retObj:  %s" % json.dumps(retObj, indent=2))
+    return retObj
+
+def processRequest(req):
+    print("processRequest: " + json.dumps(req["result"]["parameters"], indent=2))
+    # Initialize parameters for function call.
+    request = {
+        "function": "fillForm",
+        "parameters": [req["result"]["parameters"]]
+    }
+    try:
+        credentials = get_credentials()
+        http = credentials.authorize(httplib2.Http())
+
+        service = discovery.build('script', 'v1', http=http)
+        # Make the request.
+        response = service.scripts().run(body=request,
+                scriptId=os.environ['scriptId']).execute()
+
+        # Print results of the request.
+        if 'error' in response:
+            # The API executed, but the script returned an error.
+            error = response['error']['details'][0]
+            print("Script error! Message: {0}".format(error['errorMessage']))
+        else:
+            # Here, the function returns an array of strings.
+            #sheetNames = response['response'].get('result')
+            print('Success!')
+            #for name in sheetNames:
+            #    print("\t{0}".format(name))
+
+    except Exception as e:
+        # failure before the script started executing.
+        print("failed because", e)
+
+def get_credentials():
+    """Gets valid user credentials from storage.
+
+    If nothing has been stored, or if the stored credentials are invalid,
+    the OAuth2 flow is completed to obtain the new credentials.
+
+    Returns:
+        Credentials, the obtained credential.
+    """
+    secretFile = open("drive-python-quickstart.json", 'w')
+    secretFile.write(os.environ['credential'])
+    secretFile.close()
+
+    store = Storage("drive-python-quickstart.json")
+    credentials = store.get()
+    return credentials
+
 CONVERSION_TABLE = {
     1913:1.00,
     1914:1.01,
@@ -137,133 +267,6 @@ CONVERSION_TABLE = {
     2015:23.94,
     2016:24.05
 }
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    req = request.get_json(silent=True, force=True)
-
-    print("Request:")
-    print(json.dumps(req, indent=2))
-
-    res = processRequest(req)
-
-    res = json.dumps(res, indent=2)
-    r = make_response(res)
-    r.headers['Content-Type'] = 'application/json'
-    return r
-
-@app.route('/pricenow', methods=['POST'])
-def pricenow():
-    req = request.get_json(silent=True, force=True)
-
-    print("Request:")
-    print(json.dumps(req, indent=2))
-
-    res = processPricenow(req)
-
-    res = json.dumps(res, indent=2)
-    r = make_response(res)
-    r.headers['Content-Type'] = 'application/json'
-    return r
-
-@app.route('/sensorbot', methods=['POST'])
-def sensorbot():
-    req = request.get_json(silent=True, force=True)
-
-    print("Request:")
-    print(json.dumps(req, indent=2))
-    res = processSensorbot(req)
-
-    res = json.dumps(res, indent=2)
-    r = make_response(res)
-    r.headers['Content-Type'] = 'application/json'
-    return r
-
-def processSensorbot(req):
-    url = "https://us.wio.seeed.io/v1/node/GroveTempHumD0/humidity?="
-    response = requests.get(url + os.environ['wioLink_access_token'])
-    jsonObj = response.json()
-    print(json.dumps(jsonObj, indent=2))
-    speech =  "The Humidity is %s" % (jsonObj.humidity)
-    retObj = {
-        "speech": speech,
-        "displayText": speech,
-        "source": "Formbot-Webhook-sensorbot"        
-    }
-    print("retObj:  %s" % json.dumps(retObj, indent=2))
-    return retObj
-
-def processPricenow(req):
-    params = req["result"]["parameters"]
-    print("processPricenow: %s" % json.dumps(params, indent=2))
-    lastYearInMap = 2016
-    currentDollar =  CONVERSION_TABLE[lastYearInMap]
-    if "date" in params:
-        oldYear = int(params["date"])
-    else:
-        yearDiff = int(params["duration"]["amount"])
-        oldYear = lastYearInMap - yearDiff
-    oldYear = oldYear if oldYear >= 1913 else 1913
-    ratio = currentDollar / CONVERSION_TABLE[oldYear]
-    inputMoney = float(params["unit-currency"]["amount"])
-    newMoney = inputMoney * ratio
-    speech =  "In %s $%.2f was worth $%.2f" % (oldYear,inputMoney, newMoney)
-    retObj = {
-        "speech": speech,
-        "displayText": speech,
-        "source": "Formbot-Webhook-pricenow"        
-    }
-    print("retObj:  %s" % json.dumps(retObj, indent=2))
-    return retObj
-
-def processRequest(req):
-    print("processRequest: " + json.dumps(req["result"]["parameters"], indent=2))
-    # Initialize parameters for function call.
-    request = {
-        "function": "fillForm",
-        "parameters": [req["result"]["parameters"]]
-    }
-    try:
-        credentials = get_credentials()
-        http = credentials.authorize(httplib2.Http())
-
-        service = discovery.build('script', 'v1', http=http)
-        # Make the request.
-        response = service.scripts().run(body=request,
-                scriptId=os.environ['scriptId']).execute()
-
-        # Print results of the request.
-        if 'error' in response:
-            # The API executed, but the script returned an error.
-            error = response['error']['details'][0]
-            print("Script error! Message: {0}".format(error['errorMessage']))
-        else:
-            # Here, the function returns an array of strings.
-            #sheetNames = response['response'].get('result')
-            print('Success!')
-            #for name in sheetNames:
-            #    print("\t{0}".format(name))
-
-    except Exception as e:
-        # failure before the script started executing.
-        print("failed because", e)
-
-def get_credentials():
-    """Gets valid user credentials from storage.
-
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
-    Returns:
-        Credentials, the obtained credential.
-    """
-    secretFile = open("drive-python-quickstart.json", 'w')
-    secretFile.write(os.environ['credential'])
-    secretFile.close()
-
-    store = Storage("drive-python-quickstart.json")
-    credentials = store.get()
-    return credentials
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
