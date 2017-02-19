@@ -74,12 +74,7 @@ def sensorbot():
     return r
 
 def processSensorbot(req):
-    url = "https://us.wio.seeed.io/v1/node/GroveTempHumD0/humidity?access_token="
-    print(url)
-    print(os.environ['wioLink_access_token'])
-    print(url + os.environ['wioLink_access_token'])
-    
-    
+    url = "https://us.wio.seeed.io/v1/node/GroveTempHumD0/humidity?access_token=" + os.environ['wioLink_access_token']
     result = urllib.request.urlopen(url).read()
     jsonObj = json.loads(result)
     
