@@ -79,9 +79,13 @@ def sensorbot():
 
 def processSensorbot(req):
     root = "https://us.wio.seeed.io/v1/node/"
+    print("root: %s" % root)
     access = "?access_token=" + os.environ['wioLink_access_token']
+    print("access: %s" % access)
     params = req["result"]["parameters"]
+    print("params: %s" % params)
     sensors = params["sensors"]
+    print("sensors: %s" % sensors)
     urls = []
     '''  
     list(map(
@@ -92,6 +96,7 @@ def processSensorbot(req):
     for sensor in sensors:
         urls.push(APIAI_TO_ID[sensor])
         print(APIAI_TO_ID[sensor])
+    print("urls: %s" % urls)
     results = []
     for url in urls:
         builtUrl = root + url + access
@@ -99,7 +104,7 @@ def processSensorbot(req):
         jsonObj = json.loads(result)
         results.push(jsonObj)
         print(jsonObj)
-        
+    print("results: %s" % results)
     speech = ""
     for result in results:
         if hasattr(result, 'humidity'):
