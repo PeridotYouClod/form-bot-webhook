@@ -81,7 +81,7 @@ def processSensorbot(req):
 #     response = requests.get(url + os.environ['wioLink_access_token'])
 #     jsonObj = response.json()
     print(json.dumps(jsonObj, indent=2))
-    speech =  "The Humidity is %s" % (jsonObj.humidity)
+    speech =  "The Humidity is %s" % (jsonObj["humidity"])
     retObj = {
         "speech": speech,
         "displayText": speech,
