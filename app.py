@@ -7,15 +7,12 @@ import urllib.request, urllib.parse, urllib.error
 import json
 import os
 
-from flask import Flask
-from flask import request
-from flask import make_response
+from flask import Flask, request, make_response
 
 import httplib2
 
 from apiclient import discovery
-from oauth2client import client
-from oauth2client import tools
+from oauth2client import client,tools
 from oauth2client.file import Storage
 from oauth2client.client import OAuth2WebServerFlow
 
@@ -30,8 +27,8 @@ CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Drive API Quickstart'
 APIAI_TO_ID = {'temperature':"GroveTempHumD0/temperature",
                "humidity": "GroveTempHumD0/humidity"}
-               
-               
+
+
 
 # Flask app should start in global layout
 app = Flask(__name__)
@@ -39,60 +36,53 @@ app = Flask(__name__)
 @app.route('/webhook', methods=['POST'])
 def webhook():
     req = request.get_json(silent=True, force=True)
-
-    print("Request:")
-    print(json.dumps(req, indent=2))
+    print("Request: %s" % json.dumps(req, indent=2))
 
     res = processRequest(req)
 
-    res = json.dumps(res, indent=2)
-    r = make_response(res)
-    r.headers['Content-Type'] = 'application/json'
-    return r
+    return _makeJsonResponse(res)
 
 @app.route('/pricenow', methods=['POST'])
 def pricenow():
     req = request.get_json(silent=True, force=True)
 
-    print("Request:")
-    print(json.dumps(req, indent=2))
+    print("Request: %s" % json.dumps(req, indent=2))
 
     res = processPricenow(req)
 
-    res = json.dumps(res, indent=2)
-    r = make_response(res)
-    r.headers['Content-Type'] = 'application/json'
-    return r
+    return _makeJsonResponse(res)
 
 @app.route('/sensorbot', methods=['POST'])
 def sensorbot():
     req = request.get_json(silent=True, force=True)
+    print("Request: %s" % json.dumps(req, indent=2))
 
-    print("Request:")
-    print(json.dumps(req, indent=2))
     res = processSensorbot(req)
 
+    return _makeJsonResponse(res)
+
+def _makeJsonResponse(res):
     res = json.dumps(res, indent=2)
     r = make_response(res)
     r.headers['Content-Type'] = 'application/json'
     return r
 
+
 def processSensorbot(req):
     root = "https://us.wio.seeed.io/v1/node/"
-    print("root: %s" % root)
     access = "?access_token=" + os.environ['wioLink_access_token']
-    print("access: %s" % access)
+    print("Url: %sresources%s" % (root, access) )
     params = req["result"]["parameters"]
     print("params: %s" % params)
     sensors = params["sensors"]
     print("sensors: %s" % sensors)
     urls = []
-    '''  
+    '''
     list(map(
         lambda sensor: APIAI_TO_ID[sensor]
     ))
     '''
-                    
+
     for sensor in sensors:
         urls.append(APIAI_TO_ID[sensor])
         print(APIAI_TO_ID[sensor])
@@ -119,7 +109,7 @@ def processSensorbot(req):
     retObj = {
         "speech": speech,
         "displayText": speech,
-        "source": "Formbot-Webhook-sensorbot"        
+        "source": "Formbot-Webhook-sensorbot"
     }
     print("retObj:  %s" % json.dumps(retObj, indent=2))
     return retObj
@@ -142,7 +132,7 @@ def processPricenow(req):
     retObj = {
         "speech": speech,
         "displayText": speech,
-        "source": "Formbot-Webhook-pricenow"        
+        "source": "Formbot-Webhook-pricenow"
     }
     print("retObj:  %s" % json.dumps(retObj, indent=2))
     return retObj
